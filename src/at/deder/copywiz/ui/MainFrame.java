@@ -26,7 +26,7 @@ public class MainFrame extends JFrame implements IUpdateListener {
 	private JButton redoButton = new JButton("New Update");
 	
 	public MainFrame() {
-		super("Updater v0.1 by EDD");
+		super("CopyWiz 0.6");
 		
 		setLayout(new BorderLayout());
 		add(controlPanel, BorderLayout.NORTH);

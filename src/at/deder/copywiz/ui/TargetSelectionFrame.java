@@ -6,11 +6,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.Arrays;
 
-
-
-
-
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -25,16 +20,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
-
-
-
-
-
 import se.datadosen.component.RiverLayout;
-
-
-
-
 
 import at.deder.copywiz.runner.ScanForComponentesRunner;
 
@@ -64,27 +50,25 @@ public class TargetSelectionFrame extends JFrame {
 		treeAvailable.setRootVisible(false);
 
 		// button actions
-		buttonAdd
-				.addActionListener(e -> {
-					// add selected items to the selection
-					TreePath[] selectedItems = treeAvailable
-							.getSelectionPaths();
+		buttonAdd.addActionListener(e -> {
+			// add selected items to the selection
+				TreePath[] selectedItems = treeAvailable.getSelectionPaths();
 
-					if (selectedItems.length < 1) {
-						return;
+				if (selectedItems.length < 1) {
+					return;
+				}
+
+				for (TreePath tp : selectedItems) {
+					DefaultMutableTreeNode last = (DefaultMutableTreeNode) tp
+							.getPathComponent(tp.getPathCount() - 1);
+					if (last.isLeaf()) {
+						addNodeToUpdate(last);
+					} else {
+						recursivelyAddNode(last);
 					}
+				}
 
-					for (TreePath tp : selectedItems) {
-						DefaultMutableTreeNode last = (DefaultMutableTreeNode) tp
-								.getPathComponent(tp.getPathCount() - 1);
-						if (last.isLeaf()) {
-							addNodeToUpdate(last);
-						} else {
-							recursivelyAddNode(last);
-						}
-					}
-
-				});
+			});
 
 		buttonRemove.addActionListener(e -> {
 			int[] indices = tableSelected.getSelectedRows();
@@ -105,21 +89,23 @@ public class TargetSelectionFrame extends JFrame {
 			// close window
 				dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 			});
-		
+
 		buttonNext.addActionListener(e -> {
-			if(tableSelected.getRowCount() < 1) {
-				JOptionPane.showMessageDialog(this, "Please select at least on target.", "No target selected",
-						JOptionPane.INFORMATION_MESSAGE);
+			if (tableSelected.getRowCount() < 1) {
+				JOptionPane.showMessageDialog(this,
+						"Please select at least on target.",
+						"No target selected", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-			
+
 			MainFrame mFrame = new MainFrame();
-			
-			for(int i=0; i<tableSelected.getRowCount(); ++i) {
-				String target = (String) tableSelected.getModel().getValueAt(i, 0);
+
+			for (int i = 0; i < tableSelected.getRowCount(); ++i) {
+				String target = (String) tableSelected.getModel().getValueAt(i,
+						0);
 				mFrame.addUpdatePanel(target);
 			}
-			
+
 			mFrame.setVisible(true);
 			setVisible(false);
 		});
@@ -150,46 +136,47 @@ public class TargetSelectionFrame extends JFrame {
 
 	private void addNodeToUpdate(DefaultMutableTreeNode last) {
 		String path = ".";
-		for (Object ob: last.getPath()) {
+		for (Object ob : last.getPath()) {
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) ob;
-			
-			if(node.equals(treeAvailable.getModel().getRoot())) {
+
+			if (node.equals(treeAvailable.getModel().getRoot())) {
 				continue; // ignore root node
 			}
-			
-			path += File.separator
-					+ node.getUserObject().toString();
+
+			path += File.separator + node.getUserObject().toString();
 		}
-		DefaultTableModel dtm = (DefaultTableModel) tableSelected
-				.getModel();
-		
+		DefaultTableModel dtm = (DefaultTableModel) tableSelected.getModel();
+
 		// check if target exists
 		File targetFile = new File(path);
-		if(!targetFile.exists()) {
-			JOptionPane.showMessageDialog(this, "Target '"+path+"' does not exist.", "Error!", JOptionPane.ERROR_MESSAGE);;
+		if (!targetFile.exists()) {
+			JOptionPane.showMessageDialog(this, "Target '" + path
+					+ "' does not exist.", "Error!", JOptionPane.ERROR_MESSAGE);
+			;
 			return;
 		}
-		
+
 		// prevent duplicates
-		for(int i=0; i<dtm.getRowCount();++i) {
+		for (int i = 0; i < dtm.getRowCount(); ++i) {
 			Object v = dtm.getValueAt(i, 0);
-			if(v != null && v.toString().equals(targetFile.getAbsolutePath())) {
+			if (v != null && v.toString().equals(targetFile.getAbsolutePath())) {
 				return;
 			}
 		}
-		
+
 		// everything is fine, add item
 		dtm.addRow(new Object[] { targetFile.getAbsolutePath() });
 	}
 
 	private void recursivelyAddNode(DefaultMutableTreeNode last) {
-		if(last.getChildCount() <= 0) {
+		if (last.getChildCount() <= 0) {
 			return;
 		}
-		
-		for(int i= 0; i<last.getChildCount(); ++i) {
-			DefaultMutableTreeNode child = (DefaultMutableTreeNode) last.getChildAt(i);
-			if(child.isLeaf()) {
+
+		for (int i = 0; i < last.getChildCount(); ++i) {
+			DefaultMutableTreeNode child = (DefaultMutableTreeNode) last
+					.getChildAt(i);
+			if (child.isLeaf()) {
 				addNodeToUpdate(child);
 			} else {
 				recursivelyAddNode(child);

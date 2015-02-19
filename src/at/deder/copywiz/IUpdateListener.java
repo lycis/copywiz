@@ -4,7 +4,7 @@ import at.deder.copywiz.ui.UpdaterPanel;
 
 /**
  * Listenes for changes of the update status
- * @author edd
+ * @author lycis
  *
  */
 public interface IUpdateListener {
